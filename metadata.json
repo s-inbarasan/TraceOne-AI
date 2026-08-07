@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "Trace One",
+  "description": "From Error to Resolution. Observe, Diagnose, and Resolve issues rapidly.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

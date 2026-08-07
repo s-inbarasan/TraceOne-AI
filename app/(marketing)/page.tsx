@@ -15,16 +15,16 @@ export default function LandingPage() {
             <span className="text-primary">at the speed of AI.</span>
           </h1>
           <p className="mx-auto max-w-[700px] text-lg text-muted-foreground sm:text-xl">
-            TraceMind AI automatically investigates API failures, analyzes your GitHub repository, identifies root causes, and generates deploy-ready code patches.
+            Trace One automatically investigates API failures, analyzes your GitHub repository, identifies root causes, and generates deploy-ready code patches.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button size="lg" className="gap-2" asChild>
               <Link href="/login">
-                Start Free <ArrowRight className="size-4" />
+                Get Started <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="#demo">View Demo</Link>
+              <Link href="/dashboard">Go to Dashboard</Link>
             </Button>
           </div>
         </div>
@@ -36,7 +36,7 @@ export default function LandingPage() {
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Stop digging through logs.</h2>
             <p className="mx-auto max-w-[700px] text-muted-foreground md:text-lg">
-              Traditional observability tells you something broke. TraceMind tells you why it broke and hands you the fix.
+              Traditional observability tells you something broke. Trace One tells you why it broke and hands you the fix.
             </p>
           </div>
           
@@ -94,7 +94,7 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-1 pb-4">
                     <h4 className="font-semibold text-lg">Send API Logs</h4>
-                    <p className="text-muted-foreground">Ingest backend logs via our simple REST API. TraceMind intelligently groups similar errors into Incidents.</p>
+                    <p className="text-muted-foreground">Ingest backend logs via our simple REST API. Trace One intelligently groups similar errors into Incidents.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">

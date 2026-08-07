@@ -1,3 +1,4 @@
+"use client";
 import { Activity } from "lucide-react"
 
 export default function Loading() {
@@ -7,7 +8,7 @@ export default function Loading() {
         <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <Activity className="size-6" />
         </div>
-        <p className="text-sm font-medium">Loading TraceMind...</p>
+        <p className="text-sm font-medium">Loading Trace One...</p>
       </div>
     </div>
   )

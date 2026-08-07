@@ -27,13 +27,8 @@ export default function ApiKeysPage() {
   const [validating, setValidating] = useState<Record<string, boolean>>({})
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchKeys()
-  }, [])
-
   const fetchKeys = async () => {
     try {
-      // In a real app, we would decrypt these or only show last 4 chars
       const { data, error } = await supabase.from('api_keys').select('*')
       if (error) throw error
       
@@ -50,6 +45,36 @@ export default function ApiKeysPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    let isMounted = true
+    async function loadKeys() {
+      try {
+        const { data, error } = await supabase.from('api_keys').select('*')
+        if (error) throw error
+        
+        const keyMap: Record<string, any> = {}
+        if (data) {
+          data.forEach(k => {
+            keyMap[k.provider] = k
+          })
+        }
+        if (isMounted) {
+          setKeys(keyMap)
+        }
+      } catch (err) {
+        console.error("Failed to load API keys", err)
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+    loadKeys()
+    return () => {
+      isMounted = false
+    }
+  }, [supabase])
 
   const toggleKey = (id: string) => {
     setShowKey(prev => ({ ...prev, [id]: !prev[id] }))

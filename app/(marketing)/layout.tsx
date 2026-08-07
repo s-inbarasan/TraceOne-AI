@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Activity } from "lucide-react";
 
 export default function MarketingLayout({
   children,
@@ -12,10 +11,10 @@ export default function MarketingLayout({
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-14 max-w-7xl items-center px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <div className="flex size-6 items-center justify-center rounded bg-primary text-primary-foreground">
-              <Activity className="size-4" />
+            <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg>
             </div>
-            <span>TraceMind AI</span>
+            <span className="tracking-tight">Trace One</span>
           </Link>
           <div className="flex flex-1 items-center justify-end gap-4">
             <nav className="flex items-center gap-4 text-sm font-medium text-muted-foreground">
@@ -25,10 +24,10 @@ export default function MarketingLayout({
             </nav>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">Log in</Link>
+                <Link href="/login">Sign In</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/login">Start Free</Link>
+                <Link href="/login">Get Started</Link>
               </Button>
             </div>
           </div>

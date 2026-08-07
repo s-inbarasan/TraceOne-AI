@@ -28,13 +28,16 @@ export default function Dashboard() {
         if (incidentsError) throw incidentsError
 
         if (incidents) {
+          console.log("Incidents data:", incidents);
           setRecentIncidents(incidents)
           setStats({
-            openIncidents: incidents.filter(i => i.status === 'open').length,
-            resolvedToday: incidents.filter(i => i.status === 'resolved').length, // Simplified
+            openIncidents: (incidents || []).filter(i => i.status === 'open').length,
+            resolvedToday: (incidents || []).filter(i => i.status === 'resolved').length, // Simplified
             aiAccuracy: 0,
             pendingPRs: 0
           })
+        } else {
+          console.log("Incidents is null or undefined:", incidents);
         }
       } catch (err) {
         console.error("Error fetching dashboard data:", err)

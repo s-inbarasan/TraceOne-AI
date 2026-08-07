@@ -1,0 +1,94 @@
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { 
+  Activity, 
+  Settings, 
+  GitPullRequest, 
+  Bug, 
+  LayoutDashboard,
+  Box,
+  Key
+} from "lucide-react"
+
+import { cn } from "@/lib/utils"
+
+const navigation = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Incidents", href: "/incidents", icon: Activity },
+  { name: "Investigations", href: "/investigations", icon: Bug },
+  { name: "Pull Requests", href: "/pull-requests", icon: GitPullRequest },
+]
+
+const configuration = [
+  { name: "Projects", href: "/projects", icon: Box },
+  { name: "API Keys", href: "/settings/keys", icon: Key },
+  { name: "Settings", href: "/settings", icon: Settings },
+]
+
+export function Sidebar() {
+  const pathname = usePathname()
+
+  return (
+    <div className="flex h-full w-64 flex-col border-r border-border bg-card">
+      <div className="flex h-14 items-center border-b border-border px-6">
+        <Link href="/" className="flex items-center gap-2 font-semibold">
+          <div className="flex size-6 items-center justify-center rounded bg-primary text-primary-foreground">
+            <Activity className="size-4" />
+          </div>
+          <span>TraceMind AI</span>
+        </Link>
+      </div>
+
+      <div className="flex-1 overflow-auto py-4">
+        <nav className="space-y-1 px-3">
+          {navigation.map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-secondary text-secondary-foreground"
+                    : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                )}
+              >
+                <item.icon className="size-4" />
+                {item.name}
+              </Link>
+            )
+          })}
+        </nav>
+
+        <div className="mt-8">
+          <div className="mb-2 px-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Configuration
+          </div>
+          <nav className="space-y-1 px-3">
+            {configuration.map((item) => {
+              const isActive = pathname === item.href || (pathname ? pathname.startsWith(item.href + '/') : false)
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-secondary text-secondary-foreground"
+                      : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                  )}
+                >
+                  <item.icon className="size-4" />
+                  {item.name}
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+      </div>
+    </div>
+  )
+}

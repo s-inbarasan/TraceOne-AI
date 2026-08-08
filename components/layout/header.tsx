@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Bell, Search, Check, Trash2, Shield, Info, AlertTriangle, X } from "lucide-react"
+import { Bell, Search, Check, Trash2, Info, AlertTriangle, X } from "lucide-react"
 import { useWorkspace } from "@/lib/context/WorkspaceContext"
 import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@/lib/utils"

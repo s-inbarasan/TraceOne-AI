@@ -233,7 +233,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
           const meta = u.user_metadata
           const identities = u.identities || []
-          const githubIdentity = identities.find(id => id.provider === "github")
+          const githubIdentity = identities.find((id: any) => id.provider === "github")
           const hasGithub = !!githubIdentity
           const provider = hasGithub ? "github" : "email"
           
@@ -244,7 +244,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           if (!displayName && u.email) {
             // Generate display name from email
             const parts = u.email.split("@")[0].split(/[._-]/)
-            displayName = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" ")
+            displayName = parts.map((p: string) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ")
           }
 
           const avatar = dbUserAvatarUrl || githubIdentity?.identity_data?.avatar_url || meta?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(displayName)}`
@@ -277,7 +277,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           // Load database items if any
           const { data: dbProjects } = await supabase.from("projects").select("*")
           if (dbProjects && dbProjects.length > 0) {
-            const mapped: Project[] = dbProjects.map(p => ({
+            const mapped: Project[] = dbProjects.map((p: any) => ({
               id: p.id,
               name: p.name,
               slug: p.slug,
@@ -316,7 +316,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
     fetchUserAndSyncProfile()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       if (session?.user) {
         setUser(session.user)
       } else {

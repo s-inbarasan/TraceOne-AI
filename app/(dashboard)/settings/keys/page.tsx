@@ -1,182 +1,236 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Key, Eye, EyeOff, Plus, Trash2, CheckCircle2, AlertCircle, RefreshCw, Loader2 } from "lucide-react"
-import { useState, useEffect } from "react"
-import { Badge } from "@/components/ui/badge"
-import { createClient } from "@/lib/supabase/client"
-
-const SUPPORTED_PROVIDERS = [
-  { id: "openai", name: "OpenAI" },
-  { id: "anthropic", name: "Anthropic" },
-  { id: "gemini", name: "Google Gemini" },
-  { id: "nvidia", name: "NVIDIA" },
-  { id: "groq", name: "Groq" },
-  { id: "openrouter", name: "OpenRouter" },
-  { id: "mistral", name: "Mistral" },
-]
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Key,
+  Eye,
+  EyeOff,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  Loader2,
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ApiKeysPage() {
-  const [showKey, setShowKey] = useState<Record<string, boolean>>({})
-  const [loading, setLoading] = useState(true)
-  const [keys, setKeys] = useState<Record<string, any>>({})
-  const [editing, setEditing] = useState<Record<string, boolean>>({})
-  const [newKeyValues, setNewKeyValues] = useState<Record<string, string>>({})
-  const [validating, setValidating] = useState<Record<string, boolean>>({})
-  const supabase = createClient()
+  const [showKey, setShowKey] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(true);
+  const [providers, setProviders] = useState<Record<string, string>>({}); // name -> id
+  const [keys, setKeys] = useState<Record<string, any>>({}); // provider_id -> key object
+  const [editing, setEditing] = useState<Record<string, boolean>>({});
+  const [newKeyValues, setNewKeyValues] = useState<Record<string, string>>({});
+  const [validating, setValidating] = useState<Record<string, boolean>>({});
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const fetchKeys = async () => {
+  const supabase = createClient();
+
+  const SUPPORTED_PROVIDER_NAMES = [
+    "Gemini",
+    "OpenAI",
+    "Anthropic",
+    "NVIDIA",
+    "GitHub",
+  ];
+
+  const loadData = async () => {
     try {
-      const { data, error } = await supabase.from('api_keys').select('*')
-      if (error) throw error
-      
-      const keyMap: Record<string, any> = {}
-      if (data) {
-        data.forEach(k => {
-          keyMap[k.provider] = k
-        })
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      setUserId(session.user.id);
+
+      const { data: providerData } = await supabase
+        .from("providers")
+        .select("*");
+      const providerMap: Record<string, string> = {};
+      if (providerData) {
+        providerData.forEach((p: any) => {
+          providerMap[p.name] = p.id;
+        });
       }
-      setKeys(keyMap)
+      setProviders(providerMap);
+
+      const { data: keyData, error } = await supabase
+        .from("api_keys")
+        .select("*")
+        .eq("user_id", session.user.id);
+      if (error) throw error;
+
+      const keyMap: Record<string, any> = {};
+      if (keyData) {
+        keyData.forEach((k: any) => {
+          keyMap[k.provider_id] = k;
+        });
+      }
+      setKeys(keyMap);
     } catch (err) {
-      console.error("Failed to load API keys", err)
+      console.error("Failed to load API keys", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    let isMounted = true
-    async function loadKeys() {
-      try {
-        const { data, error } = await supabase.from('api_keys').select('*')
-        if (error) throw error
-        
-        const keyMap: Record<string, any> = {}
-        if (data) {
-          data.forEach(k => {
-            keyMap[k.provider] = k
-          })
-        }
-        if (isMounted) {
-          setKeys(keyMap)
-        }
-      } catch (err) {
-        console.error("Failed to load API keys", err)
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
-      }
-    }
-    loadKeys()
-    return () => {
-      isMounted = false
-    }
-  }, [supabase])
+    loadData();
+  }, []);
 
   const toggleKey = (id: string) => {
-    setShowKey(prev => ({ ...prev, [id]: !prev[id] }))
-  }
+    setShowKey((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
-  const handleSaveKey = async (providerId: string) => {
-    setValidating(prev => ({ ...prev, [providerId]: true }))
+  const handleSaveKey = async (providerName: string, providerId: string) => {
+    if (!userId || !providerId) return;
+    setValidating((prev) => ({ ...prev, [providerId]: true }));
     try {
-      const val = newKeyValues[providerId]
-      if (!val) return
+      const val = newKeyValues[providerId];
+      if (!val) return;
 
-      // Upsert into Supabase
-      const { error } = await supabase.from('api_keys').upsert({
-        provider: providerId,
-        key_hash: val, // In a real app, this should be sent to a secure endpoint to encrypt
-        last_validated: new Date().toISOString(),
-        status: 'valid'
-      }, { onConflict: 'provider' })
+      const { error } = await supabase.from("api_keys").upsert(
+        {
+          user_id: userId,
+          provider_id: providerId,
+          encrypted_key: val,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id, provider_id" },
+      );
 
-      if (error) throw error
-      
-      await fetchKeys()
-      setEditing(prev => ({ ...prev, [providerId]: false }))
-      setNewKeyValues(prev => ({ ...prev, [providerId]: '' }))
+      if (error) throw error;
+
+      await loadData();
+      setEditing((prev) => ({ ...prev, [providerId]: false }));
+      setNewKeyValues((prev) => ({ ...prev, [providerId]: "" }));
     } catch (err) {
-      console.error("Failed to save key", err)
+      console.error("Failed to save key", err);
     } finally {
-      setValidating(prev => ({ ...prev, [providerId]: false }))
+      setValidating((prev) => ({ ...prev, [providerId]: false }));
     }
-  }
+  };
 
   const handleDeleteKey = async (providerId: string) => {
+    if (!userId) return;
     try {
-      const { error } = await supabase.from('api_keys').delete().eq('provider', providerId)
-      if (error) throw error
-      await fetchKeys()
+      const { error } = await supabase
+        .from("api_keys")
+        .delete()
+        .eq("user_id", userId)
+        .eq("provider_id", providerId);
+      if (error) throw error;
+      await loadData();
     } catch (err) {
-      console.error("Failed to delete key", err)
+      console.error("Failed to delete key", err);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <Loader2 className="size-8 animate-spin text-muted-foreground" />
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-8 max-w-4xl">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">API Keys</h1>
-        <p className="text-sm text-muted-foreground">Manage your LLM provider keys used for AI investigations.</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          API Keys
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Manage your LLM provider and integration keys.
+        </p>
       </div>
 
       <div className="space-y-4">
-        {SUPPORTED_PROVIDERS.map((provider) => {
-          const isConfigured = !!keys[provider.id]
-          const isEditing = editing[provider.id]
-          const keyData = keys[provider.id]
+        {SUPPORTED_PROVIDER_NAMES.map((providerName) => {
+          const providerId = providers[providerName];
+          if (!providerId) return null;
+
+          const isConfigured = !!keys[providerId];
+          const isEditing = editing[providerId];
+          const keyData = keys[providerId];
 
           return (
-            <Card key={provider.id}>
+            <Card key={providerId}>
               <CardHeader className="flex flex-row items-center justify-between pb-4">
                 <div className="space-y-1">
                   <CardTitle className="text-base flex items-center gap-2">
-                    {provider.name}
+                    {providerName}
                     {isConfigured ? (
-                      <Badge variant="success" className="text-[10px] h-5 px-1.5 flex items-center gap-1">
+                      <Badge
+                        variant="success"
+                        className="text-[10px] h-5 px-1.5 flex items-center gap-1"
+                      >
                         <CheckCircle2 className="size-3" /> Configured
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-muted-foreground">Not Configured</Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] h-5 px-1.5 text-muted-foreground"
+                      >
+                        Not Configured
+                      </Badge>
                     )}
                   </CardTitle>
                   <CardDescription>
-                    {isConfigured && keyData?.last_validated ? 
-                      `Last validated: ${new Date(keyData.last_validated).toLocaleString()}` : 
-                      'Used for root cause analysis and patch generation.'}
+                    {isConfigured && keyData?.updated_at
+                      ? `Last updated: ${new Date(keyData.updated_at).toLocaleString()}`
+                      : "Used for Trace One operations."}
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
                   {isConfigured && !isEditing ? (
                     <>
-                      <Button variant="outline" size="sm" onClick={() => setEditing(prev => ({ ...prev, [provider.id]: true }))}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setEditing((prev) => ({
+                            ...prev,
+                            [providerId]: true,
+                          }))
+                        }
+                      >
                         Edit
                       </Button>
-                      <Button variant="destructive" size="sm" className="gap-2" onClick={() => handleDeleteKey(provider.id)}>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => handleDeleteKey(providerId)}
+                      >
                         <Trash2 className="size-4" />
                         Remove
                       </Button>
                     </>
                   ) : !isConfigured && !isEditing ? (
-                    <Button size="sm" className="gap-2" onClick={() => setEditing(prev => ({ ...prev, [provider.id]: true }))}>
+                    <Button
+                      size="sm"
+                      className="gap-2"
+                      onClick={() =>
+                        setEditing((prev) => ({ ...prev, [providerId]: true }))
+                      }
+                    >
                       <Plus className="size-4" />
                       Configure
                     </Button>
                   ) : null}
                 </div>
               </CardHeader>
-              
+
               {(isConfigured || isEditing) && (
                 <CardContent>
                   {isEditing ? (
@@ -186,25 +240,36 @@ export default function ApiKeysPage() {
                           <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                             <Key className="size-4" />
                           </div>
-                          <Input 
-                            type="password" 
-                            placeholder={`Enter your ${provider.name} API Key`}
+                          <Input
+                            type="password"
+                            placeholder={`Enter your ${providerName} API Key`}
                             className="pl-9 font-mono"
-                            value={newKeyValues[provider.id] || ''}
-                            onChange={(e) => setNewKeyValues(prev => ({ ...prev, [provider.id]: e.target.value }))}
+                            value={newKeyValues[providerId] || ""}
+                            onChange={(e) =>
+                              setNewKeyValues((prev) => ({
+                                ...prev,
+                                [providerId]: e.target.value,
+                              }))
+                            }
                           />
                         </div>
-                        <Button 
-                          onClick={() => handleSaveKey(provider.id)}
-                          disabled={!newKeyValues[provider.id] || validating[provider.id]}
+                        <Button
+                          onClick={() =>
+                            handleSaveKey(providerName, providerId)
+                          }
+                          disabled={
+                            !newKeyValues[providerId] || validating[providerId]
+                          }
                           className="min-w-[100px]"
                         >
-                          {validating[provider.id] ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
-                          Save & Validate
+                          {validating[providerId] ? (
+                            <Loader2 className="size-4 animate-spin mr-2" />
+                          ) : null}
+                          Save
                         </Button>
                       </div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                        <AlertCircle className="size-3.5" /> 
+                        <AlertCircle className="size-3.5" />
                         Keys are securely encrypted before being stored.
                       </div>
                     </div>
@@ -214,20 +279,32 @@ export default function ApiKeysPage() {
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                           <Key className="size-4" />
                         </div>
-                        <Input 
-                          type={showKey[provider.id] ? "text" : "password"} 
-                          value={showKey[provider.id] ? keyData?.key_hash || "sk-..." : "sk-................................................"} 
+                        <Input
+                          type={showKey[providerId] ? "text" : "password"}
+                          value={
+                            showKey[providerId]
+                              ? keyData?.encrypted_key || "sk-..."
+                              : "sk-................................................"
+                          }
                           className="pl-9 font-mono"
                           readOnly
                         />
-                        <button 
-                          onClick={() => toggleKey(provider.id)}
+                        <button
+                          onClick={() => toggleKey(providerId)}
                           className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
                         >
-                          {showKey[provider.id] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                          {showKey[providerId] ? (
+                            <EyeOff className="size-4" />
+                          ) : (
+                            <Eye className="size-4" />
+                          )}
                         </button>
                       </div>
-                      <Button variant="outline" className="gap-2" onClick={() => {}}>
+                      <Button
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => {}}
+                      >
                         <RefreshCw className="size-4" /> Test Connection
                       </Button>
                     </div>
@@ -235,9 +312,9 @@ export default function ApiKeysPage() {
                 </CardContent>
               )}
             </Card>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

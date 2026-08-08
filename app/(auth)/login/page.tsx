@@ -11,7 +11,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, AlertCircle, Eye, EyeOff, ArrowLeft, Bot } from "lucide-react";
@@ -20,7 +19,7 @@ import { GithubIcon } from "@/components/ui/icons";
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -83,7 +82,7 @@ export default function LoginPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${location.origin}/auth/callback`,
+          emailRedirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`,
         },
       });
       if (error) throw error;
@@ -102,7 +101,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${location.origin}/auth/callback`,
+          redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`,
           scopes: "repo read:user user:email",
         },
       });

@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { 
-  Activity, 
   Settings, 
   GitPullRequest, 
   LayoutDashboard,
@@ -11,17 +10,13 @@ import {
   Key,
   ChevronLeft,
   ChevronRight,
-  Search,
-  History,
-  Bot,
   Plus,
-  GitBranch,
   LogOut
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { GithubIcon } from "@/components/ui/icons"
 import { useWorkspace } from "@/lib/context/WorkspaceContext"
-import { motion, AnimatePresence } from "motion/react"
+import { motion } from "motion/react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 

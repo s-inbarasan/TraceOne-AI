@@ -23,6 +23,7 @@ export async function POST(req: Request) {
     }
 
     const logData = result.data;
+    console.log(`Ingested log for project ${logData.projectId}: ${logData.method} ${logData.path}`);
     
     // In a real implementation:
     // 1. const supabase = await createClient();

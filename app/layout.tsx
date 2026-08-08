@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { WorkspaceProvider } from '@/lib/context/WorkspaceContext';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'TraceMind AI',
-  description: 'AI-powered API observability platform',
+  title: 'Trace One',
+  description: 'AI-powered API observability & resolution platform',
 };
 
 export default function RootLayout({
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="bg-background text-foreground antialiased selection:bg-primary/30" suppressHydrationWarning>
-        {children}
+        <WorkspaceProvider>
+          {children}
+        </WorkspaceProvider>
       </body>
     </html>
   );

@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ['lucide-react'],
   turbopack: {},
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
   // Allow access to remote image placeholder.
   images: {

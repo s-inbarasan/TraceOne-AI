@@ -32,16 +32,38 @@ import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/lib/context/WorkspaceContext";
 import { useRouter, useSearchParams } from "next/navigation";
 
+interface ProjectIncident {
+  count: number;
+}
+
+interface Project {
+  id: string;
+  name: string;
+  repository: string;
+  source_type: string;
+  status: string;
+  description: string;
+  created_at: string;
+  incidents?: ProjectIncident[];
+}
+
+interface Repository {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+}
+
 export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   // New Project Dialog State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [reposLoading, setReposLoading] = useState(false);
-  const [repos, setRepos] = useState<any[]>([]);
+  const [repos, setRepos] = useState<Repository[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRepo, setSelectedRepo] = useState<any>(null);
+  const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
   const [creating, setCreating] = useState(false);
   const [githubError, setGithubError] = useState<string | null>(null);
 
@@ -224,10 +246,10 @@ export default function ProjectsPage() {
               <CardContent>
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/50">
                   <div className="flex items-center gap-1.5 font-medium">
-                    {project.incidents?.[0]?.count > 0 ? (
+                    {(project.incidents?.[0]?.count ?? 0) > 0 ? (
                       <span className="flex items-center gap-1 text-warning">
                         <AlertCircle className="size-3.5" />
-                        {project.incidents[0].count} Open
+                        {project.incidents?.[0]?.count} Open
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 text-success">
